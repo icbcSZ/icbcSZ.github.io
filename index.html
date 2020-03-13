@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <title>ICBC Suzhou</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.js'></script>
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.css' rel='stylesheet' />
+        <style>
+            body { margin:0; padding:0; }
+            #map { position:absolute; top:0; bottom:0; width:100%; }
+            
+            .map-overlay {
+                font: 10.5px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+                position: absolute;
+                width: 301px;
+                top: 0;
+                left: 0;
+                padding: 10px;
+            }
+
+            .map-overlay .map-overlay-inner {
+                background-color: rgba(196,196,196,0.8);
+                box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+                border-radius: 3px;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .map-overlay table {
+                border: none;
+                width: 100%;
+            }
+
+            .map-overlay h2 {
+                line-height: 24px;
+                display: block;
+                margin: 0 0 10px;
+            }
+
+            .map-overlay label {
+                font: 16px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+                display: block;                
+                vertical-align: left;
+                margin: 0 0 0 10px;
+                padding: 0;
+            }
+            
+            .map-overlay tex {
+                position: absolute;                
+                left: 60px;
+            }
+            
+            .map-overlay tog1 {
+                position: absolute;
+                top: 55px;
+                right: 240px;
+            }
+            
+            .map-overlay tog2 {
+                position: absolute;
+                top: 75px;
+                right: 240px;
+            }
+
+            .map-overlay .legend .bar {
+                height: 10px;
+                width: 100%;
+                background: linear-gradient(to right, #FCA107, #7F3121);
+            }
+
+            .map-overlay input {
+                background-color: rgba(225, 225, 225, 0.9);
+                display: inline-block;
+                width: 100%;
+                min-width: 220px;
+                position: relative;
+                margin: 6px 0 0 0;
+                cursor: ew-resize;
+            }
+
+            .map-overlay p.credit {
+                margin: 0;
+                padding: 0;
+            }
+            
+            .map-overlay p.lim {
+                margin: 0;
+                padding: 0;
+            }
+
+            .map-overlay .listing {
+                overflow: scroll;
+                position: absolute;
+                width: 91%;
+                max-height: 140px;
+                background-color: rgba(225, 225, 225, 1);
+            }
+ 
+            .map-overlay .listing > * {
+                display: block;
+                padding: 0;
+                margin: 0 auto;
+            }
+
+            .mapboxgl-popup {
+                max-width: 400px;
+                min-width: 90px;
+                font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+                padding: 0;
+                margin: 0,0,0,20px;
+            }
+
+            .mapboxgl-popup-tip-container {
+                width:0px;
+                height:0px;
+                margin:0 auto;
+                position:relative;
+            }
+
+            .mapboxgl-popup-tip {
+                width:0;
+                height:0;
+                margin:0;
+                border-left:0 solid transparent;
+                border-right:0 solid transparent;
+                border-top:0 solid transparent;
+                box-shadow:none;
+            }
+
+            .legend {
+                background-color: rgba(196,196,196,0.8);
+                border-radius: 3px;
+                bottom: 20px;
+                width: 126px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+                font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+                padding: 10px;
+                position: absolute;
+                right: 10px;
+                z-index: 1;
+            }
+ 
+            .legend h4 {
+                margin: 0 0 10px;
+            }
+ 
+            .legend div span {
+                border-radius: 50%;
+                display: inline-block;
+                height: 10px;
+                margin-right: 5px;
+                width: 10px;
+            }
+            
+            #menu {
+                background: rgba(196,196,196,0.8);
+                position: absolute;
+                z-index: 1;
+                top: 10px;
+                right: 10px;
+                border-radius: 3px;
+                width: 146px;
+                border: 1px solid rgba(0,0,0,0.4);
+                font-family: 'Open Sans', sans-serif;
+            }
+ 
+            #menu a {
+                font-size: 13px;
+                color: #404040;
+                display: block;
+                margin: 0;
+                padding: 0;
+                padding: 10px;
+                text-decoration: none;
+                border-bottom: 1px solid rgba(0,0,0,0.25);
+                text-align: center;
+            }
+ 
+            #menu a:last-child {
+                border: none;
+            }
+ 
+            #menu a:hover {
+                background-color: rgba(169,169,169,0.8);
+                color: #404040;
+            }
+ 
+            #menu a.active {
+                background-color: #3887be;
+                color: #ffffff;
+            }
+ 
+            #menu a.active:hover {
+                background: #3074a4;
+            }
+                                    
+            #menu c {
+                font-size: 13px;
+                color: #404040;
+                display: block;
+                margin: 0;
+                padding: 0;
+                padding: 10px;
+                text-decoration: none;
+                border-bottom: 1px solid rgba(0,0,0,0.25);
+                text-align: center;
+            }
+ 
+            #menu c:last-child {
+                border: none;
+            }
+ 
+            #menu c:hover {
+                background-color: rgba(169,169,169,0.8);
+                color: #404040;
+            }
+ 
+            #menu c.active {
+                background-color: #7887be;
+                color: #ffffff;
+            }
+ 
+            #menu c.active:hover {
+                background: #7074a4;
+            }
+            
+            #menu d {
+                font-size: 13px;
+                color: #404040;
+                display: block;
+                margin: 0;
+                padding: 0;
+                padding: 10px;
+                text-decoration: none;
+                border-bottom: 1px solid rgba(0,0,0,0.25);
+                text-align: center;
+            }
+ 
+            #menu d:last-child {
+                border: none;
+            }
+ 
+            #menu d:hover {
+                background-color: rgba(169,169,169,0.8);
+                color: #404040;
+            }
+ 
+            #menu d.active {
+                background-color: #219864;
+                color: #ffffff;
+            }
+ 
+            #menu d.active:hover {
+                background: #21886e;
+            }
+            
+        </style>
+    </head>
+    
+    <body>
+ 
+        <style>
+            body {
+                overflow: hidden;
+            }
+ 
+            body * {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+ 
+            .map {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+        <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.1.0/mapbox-gl-compare.css' type='text/css' />
+        
+        <nav id="menu"></nav>
+        
+        <div id='map' class='map'></div>
+    
+        <div class='map-overlay top'>
+            <div class='map-overlay-inner'>
+
+                <h2>中国工商银行 苏州分行 营业网点分布图</h2>
+                <table>
+                    <tr><td><p class="cityfly">Zoom To: <a href="#" class="citylink" id="cs">常熟</a> &nbsp;<a href="#" class="citylink" id="dq">道前</a> &nbsp;<a href="#" class="citylink" id="ks">昆山</a> &nbsp;<a href="#" class="citylink" id="ly">留园</a> &nbsp;<a href="#" class="citylink" id="tc">太仓</a> &nbsp;<a href="#" class="citylink" id="wj">吴江</a> &nbsp;<a href="#" class="citylink" id="wz">吴中</a> &nbsp;<a href="#" class="citylink" id="xc">相城</a> &nbsp;<a href="#" class="citylink" id="xq">新区</a> &nbsp;<a href="#" class="citylink" id="yq">园区</a> &nbsp;<a href="#" class="citylink" id="zjg">张家港</a> <br> Back To: <a href="#" class="citylink" id="whol">苏州</a></p>
+                        </td></tr>
+                </table>
+                                                
+                Keep at least one of '财富管理中心', '理财中心' and '金融便利店' layer visible, drag the map, search 网点(s) in the displayed area. <br> After each update of the layer settings, please re-drag the map to populate the updated results.
+                <p class='lim'><input id='feature-filter' type='text' placeholder='Enter correct 网点名称 to filter results' />
+                    <a id='feature-listing' class='listing'></a>
+                </p>
+            </div>
+        </div>
+
+        <script>
+            mapboxgl.accessToken = 'pk.eyJ1Ijoic2FuZ3l1aG9uZyIsImEiOiJjanF6NmxxMmMwMTdyNGJwazA5dGwwdXJtIn0.jxzKiJnfDiKwvune9_CCuw';
+
+            var map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/sangyuhong/cjv4yk47y2lrx1fofzfcdw8t8',
+                center: [120.67,31.43], // starting position [lng, lat]
+                zoom: 7.6, // starting zoom
+                pitch: 0 // tilt of the viewpoint in degrees
+            });
+
+            // Holds visible 网名名 features for filtering
+            var 网名名s = [];
+ 
+            // Create a popup, but don't add it to the map yet.
+            var popup = new mapboxgl.Popup({
+                closeButton: false
+            });
+ 
+            var filterEl = document.getElementById('feature-filter');
+            var listingEl = document.getElementById('feature-listing');
+ 
+            function renderListings(features) {
+                // Clear any existing listings
+                listingEl.innerHTML = '';
+                if (features.length) {
+                    features.forEach(function(feature) {
+                        var prop = feature.properties;
+                        var item = document.createElement('a');
+                        item.target = '_blank';
+
+                        item.textContent = prop.网名名;
+                        item.addEventListener('mouseover', function() {
+                            // Highlight corresponding feature on the map
+                            popup.setLngLat(feature.geometry.coordinates)
+                                .setText(feature.properties.网名名)
+                                .addTo(map);
+                        });
+                        item.addEventListener('mouseleave', function() {
+                            map.getCanvas().style.cursor = '';
+                            popup.remove();
+                        });
+                        listingEl.appendChild(item);
+                    });
+ 
+                    // Show the filter input
+                    filterEl.parentNode.style.display = 'block';
+                } else {
+                    var empty = document.createElement('p');
+                    listingEl.appendChild(empty);
+ 
+                    // Hide the filter input
+                    filterEl.parentNode.style.display = 'none';
+ 
+                    // remove features filter
+                    map.setFilter('财富管理中心', ['has', '网名名']);
+                    map.setFilter('理财中心', ['has', '网名名']);
+                    map.setFilter('金融便利店', ['has', '网名名']);
+                }
+            }
+ 
+            function normalize(string) {
+                return string.trim().toLowerCase();
+            }
+ 
+            function getUniqueFeatures(array, comparatorProperty) {
+                var existingFeatureKeys = {};
+                // Because features come from tiled vector data, feature geometries may be split
+                // or duplicated across tile boundaries and, as a result, features may appear
+                // multiple times in query results.
+                var uniqueFeatures = array.filter(function(el) {
+                    if (existingFeatureKeys[el.properties[comparatorProperty]]) {
+                        return false;
+                    } else {
+                        existingFeatureKeys[el.properties[comparatorProperty]] = true;
+                        return true;
+                    }
+                });
+                return uniqueFeatures;
+            }
+
+            map.on('load', function() {
+                // Add standard navigation control
+                map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+                
+                // Add the proportional circle layer to the map
+                map.addLayer({
+                    id: '财富管理中心',
+                    type: 'circle',
+                    source: {
+                        type: 'vector',
+                        url: 'mapbox://sangyuhong.bf2iuvp2' // Mapbox tileset Map ID
+                    },
+                    'source-layer': 'icbcSZcfglzx-4obrvw', // name of tilesets
+                    'layout': {
+                        'visibility': 'visible'
+                    },
+                    paint: {
+                        'circle-color': '#3887be',
+                        'circle-opacity': 1,
+                        'circle-stroke-width': {
+                            stops: [[4, 1], [9, 2], [13, 3]]
+                        },
+                        'circle-stroke-color': '#D8D0CD',
+                        'circle-stroke-opacity': 1,
+                        'circle-radius': {
+                            stops: [[4, 3], [9, 6]]
+                        }}
+                });
+
+                // Add the proportional circle layer to the map
+                map.addLayer({
+                    id: '理财中心',
+                    type: 'circle',
+                    source: {
+                        type: 'vector',
+                        url: 'mapbox://sangyuhong.d6tfiqlx' // Mapbox tileset Map ID
+                    },
+                    'source-layer': 'icbcSZlczx-6dvv26', // name of tilesets
+                    'layout': {
+                        'visibility': 'none'
+                    },
+                    paint: {
+                        'circle-color': '#7887be',
+                        'circle-opacity': 1,
+                        'circle-stroke-width': {
+                            stops: [[4, 1], [9, 2], [13, 3]]
+                        },
+                        'circle-stroke-color': '#D8D0CD',
+                        'circle-stroke-opacity': 1,
+                        'circle-radius': {
+                            stops: [[4, 3], [9, 6]]
+                        }}
+                });
+                
+                // Add the proportional circle layer to the map
+                map.addLayer({
+                    id: '金融便利店',
+                    type: 'circle',
+                    source: {
+                        type: 'vector',
+                        url: 'mapbox://sangyuhong.76kxt77j' // Mapbox tileset Map ID
+                    },
+                    'source-layer': 'icbcSZjrbld-9qoimw', // name of tilesets
+                    'layout': {
+                        'visibility': 'none'
+                    },
+                    paint: {
+                        'circle-color': '#219864',
+                        'circle-opacity': 1,
+                        'circle-stroke-width': {
+                            stops: [[4, 1], [9, 2], [13, 3]]
+                        },
+                        'circle-stroke-color': '#D8D0CD',
+                        'circle-stroke-opacity': 1,
+                        'circle-radius': {
+                            stops: [[4, 3], [9, 6]]
+                        }}
+                });
+                
+                // Add show and hide                                
+                var toggleableLayerIds = [ '财富管理中心' ];
+ 
+                for (var i = 0; i < toggleableLayerIds.length; i++) {
+                    var id = toggleableLayerIds[i];
+ 
+                    var link = document.createElement('a');
+                    link.href = '#';
+                    link.className = 'active';
+                    link.textContent = id;
+ 
+                    link.onclick = function (e) {
+                        var clickedLayer = this.textContent;
+                        e.preventDefault();
+                        e.stopPropagation();
+ 
+                        var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+ 
+                        if (visibility === 'visible') {
+                            map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+                            this.className = '';
+                        } else {
+                            this.className = 'active';
+                            map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+                        }
+                    };
+                    
+                    var layerss = document.getElementById('menu');
+                    layerss.appendChild(link);
+                }
+                
+                // Add another show and hide
+                var toggleableLayerIds2 = [ '理财中心' ];
+ 
+                for (var i = 0; i < toggleableLayerIds2.length; i++) {
+                    var id2 = toggleableLayerIds2[i];
+ 
+                    var link2 = document.createElement('c');
+                    link2.href = '#';
+                    link2.className = '';
+                    link2.textContent = id2;
+ 
+                    link2.onclick = function (e) {
+                        var clickedLayer2 = this.textContent;
+                        e.preventDefault();
+                        e.stopPropagation();
+ 
+                        var visibility2 = map.getLayoutProperty(clickedLayer2, 'visibility');
+ 
+                        if (visibility2 === 'visible') {
+                            map.setLayoutProperty(clickedLayer2, 'visibility', 'none');
+                            this.className = '';
+                        } else {
+                            this.className = 'active';
+                            map.setLayoutProperty(clickedLayer2, 'visibility', 'visible');
+                        }
+                    };
+ 
+                    var layerss = document.getElementById('menu');
+                    layerss.appendChild(link2);
+                }
+                
+                // Add another show and hide
+                var toggleableLayerIds3 = [ '金融便利店' ];
+ 
+                for (var i = 0; i < toggleableLayerIds3.length; i++) {
+                    var id3 = toggleableLayerIds3[i];
+ 
+                    var link3 = document.createElement('d');
+                    link3.href = '#';
+                    link3.className = '';
+                    link3.textContent = id3;
+ 
+                    link3.onclick = function (e) {
+                        var clickedLayer3 = this.textContent;
+                        e.preventDefault();
+                        e.stopPropagation();
+ 
+                        var visibility3 = map.getLayoutProperty(clickedLayer3, 'visibility');
+ 
+                        if (visibility3 === 'visible') {
+                            map.setLayoutProperty(clickedLayer3, 'visibility', 'none');
+                            this.className = '';
+                        } else {
+                            this.className = 'active';
+                            map.setLayoutProperty(clickedLayer3, 'visibility', 'visible');
+                        }
+                    };
+ 
+                    var layerss = document.getElementById('menu');
+                    layerss.appendChild(link3);
+                }
+                
+                map.on('moveend', function() {
+                    var features = map.queryRenderedFeatures({layers:['财富管理中心', '理财中心','金融便利店']});
+ 
+                    if (features) {
+                        var uniqueFeatures = getUniqueFeatures(features, "网名名");
+                        // Populate features for the listing overlay.
+                        renderListings(uniqueFeatures);
+ 
+                        // Clear the input container
+                        filterEl.value = '';
+ 
+                        // Store the current features in sn `网名名s` variable to
+                        // later use for filtering on `keyup`.
+                        网名名s = uniqueFeatures;
+                    }
+                });
+ 
+                filterEl.addEventListener('keyup', function(e) {
+                    var value = normalize(e.target.value);
+ 
+                    // Filter visible features that don't match the input value.
+                    var filtered = 网名名s.filter(function(feature) {
+                        var name = normalize(feature.properties.网名名);
+                        return name.indexOf(value) > -1;
+                    });
+ 
+                    // Populate the sidebar with filtered results
+                    renderListings(filtered);
+ 
+                    // Set the filter to populate features into the layer.
+                    map.setFilter('财富管理中心', ['match', ['get', '网名名'], filtered.map(function(feature) {
+                        return feature.properties.网名名;
+                    }), true, false]);
+                    map.setFilter('理财中心', ['match', ['get', '网名名'], filtered.map(function(feature) {
+                        return feature.properties.网名名;
+                    }), true, false]);
+                    map.setFilter('金融便利店', ['match', ['get', '网名名'], filtered.map(function(feature) {
+                        return feature.properties.网名名;
+                    }), true, false]);
+                });
+ 
+                // Call this function on initialization
+                // passing an empty array to render an empty state
+                renderListings([]);
+                
+                var mypopup = new mapboxgl.Popup({closeButton: false});    
+
+                // Another event listener that adds the popup when the user puts their cursor over the city circles
+                map.on('mouseover', '财富管理中心', function (e) {
+                    mypopup
+                        .setLngLat(e.features[0].geometry.coordinates)
+                        .setHTML("<h3>" + e.features[0].properties.网名名 + "</h3>所属支行: " + e.features[0].properties.支行 + "<br />网点号: " + e.features[0].properties.网点号 + "<br />业态认定: " + e.features[0].properties.业态认 + "<br />备注: " + e.features[0].properties.备注)
+                        .addTo(map);
+                });
+
+                // Change the cursor to a pointer when the mouse is over the cities layer.
+                map.on('mouseenter', '财富管理中心', function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                // Change it back to a pointer when it leaves and remove the popup window.
+                map.on('mouseleave', '财富管理中心', function () {
+                    map.getCanvas().style.cursor = '';
+                    mypopup.remove();
+                });
+
+                // Another event listener that adds the popup when the user puts their cursor over the city circles
+                map.on('mouseover', '理财中心', function (e) {
+                    mypopup
+                        .setLngLat(e.features[0].geometry.coordinates)
+                        .setHTML("<h3>" + e.features[0].properties.网名名 + "</h3>所属支行: " + e.features[0].properties.支行 + "<br />网点号: " + e.features[0].properties.网点号 + "<br />业态认定: " + e.features[0].properties.业态认 + "<br />备注: " + e.features[0].properties.备注)
+                        .addTo(map);
+                });
+
+                // Change the cursor to a pointer when the mouse is over the cities layer.
+                map.on('mouseenter', '理财中心', function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                // Change it back to a pointer when it leaves and remove the popup window.
+                map.on('mouseleave', '理财中心', function () {
+                    map.getCanvas().style.cursor = '';
+                    mypopup.remove();
+                });
+                
+                // Another event listener that adds the popup when the user puts their cursor over the city circles
+                map.on('mouseover', '金融便利店', function (e) {
+                    mypopup
+                        .setLngLat(e.features[0].geometry.coordinates)
+                        .setHTML("<h3>" + e.features[0].properties.网名名 + "</h3>所属支行: " + e.features[0].properties.支行 + "<br />网点号: " + e.features[0].properties.网点号 + "<br />业态认定: " + e.features[0].properties.业态认 + "<br />备注: " + e.features[0].properties.备注)
+                        .addTo(map);
+                });
+
+                // Change the cursor to a pointer when the mouse is over the cities layer.
+                map.on('mouseenter', '金融便利店', function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                // Change it back to a pointer when it leaves and remove the popup window.
+                map.on('mouseleave', '金融便利店', function () {
+                    map.getCanvas().style.cursor = '';
+                    mypopup.remove();
+                });
+
+                //Event listener for the zoom to buttons created using a for loop and switch case statement to set lat and long
+                var x = document.getElementsByClassName('citylink');
+                var i;
+                for (i = 0; i < x.length; i++) {
+                    x[i].addEventListener('click', function(e) {
+
+                        var lat,long,zoom;
+
+                        switch(e.target.id) {
+                            case "cs": long=120.75; lat=31.65; zoom=9.67; break;
+                            case "dq": long=120.67; lat=31.43; zoom=8; break;
+                            case "ks": long=120.91; lat=31.39; zoom=9.67; break;
+                            case "ly": long=120.67; lat=31.43; zoom=8; break;
+                            case "tc": long=121.10; lat=31.56; zoom=9.67; break;
+                            case "wj": long=120.53; lat=31.02; zoom=9.56; break;
+                            case "wz": long=120.58; lat=31.22; zoom=9.67; break;
+                            case "xc": long=120.59; lat=31.41; zoom=10; break;
+                            case "xq": long=120.49; lat=31.31; zoom=10.34; break;
+                            case "yq": long=120.67; lat=31.31; zoom=10.67; break;
+                            case "zjg": long=120.55; lat=31.87; zoom=9.67; break;
+                            case "whol": long=120.67; lat=31.43; zoom=7.6; break;
+                        }
+
+                        map.flyTo({
+                            center: [long,lat],
+                            zoom: zoom,
+                            speed: 0.5,
+                            pitch: 0
+                        });
+                    });
+                }
+
+            });
+                        
+        </script>
+ 
+    </body>
+</html>
