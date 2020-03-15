@@ -128,7 +128,7 @@
 
             .mapboxgl-popup {
                 max-width: 400px;
-                min-width: 180px;
+                min-width: 90px;
                 font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
                 padding: 0;
                 margin: 0,0,0,20px;
@@ -335,7 +335,7 @@
             <div><span style='background-color: #439320'></span>县级行政区</div>            
         </div>
         
-        <div id='local-authority' class='locau' style='display: block;'>
+        <div id='local-authority' class='locau' style='display: none;'>
             <h5 id="laname">Hover over a local authority on '县级行政区' layer</h5>
         </div>
         
@@ -348,10 +348,10 @@
                 <table><tr><td>
                     
                     <tex><label for='layer1'>市级行政区</label></tex>
-                    <tog1><input id='layer1' type='radio' name='toggle' value='Den' checked='checked'></tog1>
+                    <tog1><input id='layer1' type='radio' name='toggle' value='Shi' checked='checked'></tog1>
                     <br>
                     <tex><label for='layer2'>县级行政区</label></tex>
-                    <tog2><input id='layer2' type='radio' name='toggle' value='Pro'></tog2>
+                    <tog2><input id='layer2' type='radio' name='toggle' value='Xian'></tog2>
                     </td>
                     </tr>                    
 
@@ -382,15 +382,7 @@
                 zoom: 7.6, // starting zoom
                 pitch: 0 // tilt of the viewpoint in degrees
             });
-
-            // Holds visible station features for filtering
-            var stations = [];
- 
-            // Create a popup, but don't add it to the map yet.
-            var popup = new mapboxgl.Popup({
-                closeButton: false
-            });
- 
+            
             // Holds visible 网名名 features for filtering
             var 网名名s = [];
  
@@ -505,6 +497,7 @@
                         'visibility': 'visible'
                     },
                     paint: {
+                        'line-opacity': 0,
                         'line-color': '#D8D0CD',
                         'line-width': 3
                     },
@@ -512,39 +505,43 @@
                 });
                 
                 map.on('mousemove', function(e) {
-                    var la = afterMap.queryRenderedFeatures(e.point, {
+                    var la = map.queryRenderedFeatures(e.point, {
                         layers: ['xianqu']
                     });
                     
                     if (la.length==1) {
-                        afterMap.setFilter('lahighlight', ['==','NL_NAME_3',la[0].properties.NL_NAME_3]);
+                        map.setFilter('lahighlight', ['==','NL_NAME_3',la[0].properties.NL_NAME_3]);
                         document.getElementById('local-authority').innerHTML = la[0].properties.NL_NAME_3 + ': GDP数据待完善。';
                     } else {
-                        afterMap.setFilter('lahighlight', ['==','NL_NAME_3','null']);
+                        map.setFilter('lahighlight', ['==','NL_NAME_3','null']);
                         document.getElementById('local-authority').innerHTML = "Hover over a local authority on '县级行政区' layer";
                     }                    
                 });
 
                 var shiLegendEl = document.getElementById('shi-legend');
                 var xianLegendEl = document.getElementById('xian-legend');
+                var laLegendEl = document.getElementById('local-authority');
 
                 //Event listener for layer switch
                 document.getElementById('layer1').addEventListener('click', function(){
                     map.setPaintProperty('shiqu','fill-opacity',0.95);
                     map.setPaintProperty('xianqu','fill-opacity',0);
-                    map.setPaintProperty('local-authority','fill-opacity',0);
+                    map.setPaintProperty('lahighlight','line-opacity',0);
                     shiLegendEl.style.display = 'block';
                     xianLegendEl.style.display = 'none';
+                    laLegendEl.style.display = 'none';
                 });
 
                 document.getElementById('layer2').addEventListener('click', function(){
                     map.setPaintProperty('shiqu','fill-opacity',0);
                     map.setPaintProperty('xianqu','fill-opacity',0.95);
-                   map.setPaintProperty('local-authority','fill-opacity',0.95);
+                    map.setPaintProperty('lahighlight','line-opacity',0.95);
                     shiLegendEl.style.display = 'none';
                     xianLegendEl.style.display = 'block';
+                    laLegendEl.style.display = 'block';
                 });
                 
+                // Add the proportional circle layer to the map
                 map.addLayer({
                     id: '财富管理中心',
                     type: 'circle',
