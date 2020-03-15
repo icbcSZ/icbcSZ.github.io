@@ -55,13 +55,13 @@
             .map-overlay tog1 {
                 position: absolute;
                 top: 55px;
-                right: 240px;
+                right: 161px;
             }
             
             .map-overlay tog2 {
                 position: absolute;
                 top: 75px;
-                right: 240px;
+                right: 161px;
             }
 
             .map-overlay .legend .bar {
@@ -128,7 +128,7 @@
 
             .mapboxgl-popup {
                 max-width: 400px;
-                min-width: 90px;
+                min-width: 180px;
                 font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
                 padding: 0;
                 margin: 0,0,0,20px;
@@ -155,7 +155,7 @@
                 background-color: rgba(196,196,196,0.8);
                 border-radius: 3px;
                 bottom: 20px;
-                width: 126px;
+                width: 139px;
                 box-shadow: 0 1px 2px rgba(0,0,0,0.10);
                 font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
                 padding: 10px;
@@ -176,6 +176,23 @@
                 width: 10px;
             }
             
+            .locau {
+                background-color: rgba(196,196,196,0.8);
+                border-radius: 3px;
+                bottom: 40px;
+                width: 251px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+                font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+                padding: 5px;
+                position: absolute;
+                left: 50px;
+                z-index: 1;
+            }
+ 
+            .locau h5 {
+                margin: 0 0 10px;
+            }
+
             #menu {
                 background: rgba(196,196,196,0.8);
                 position: absolute;
@@ -183,7 +200,7 @@
                 top: 10px;
                 right: 10px;
                 border-radius: 3px;
-                width: 146px;
+                width: 156px;
                 border: 1px solid rgba(0,0,0,0.4);
                 font-family: 'Open Sans', sans-serif;
             }
@@ -303,9 +320,24 @@
                 width: 100%;
             }
         </style>
+        
         <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.1.0/mapbox-gl-compare.css' type='text/css' />
         
         <nav id="menu"></nav>
+        
+        <div id='shi-legend' class='legend' style='display: block;'>
+            <h4>行政区类型</h4>
+            <div><span style='background-color: #FFEDA0'></span>市级行政区</div>
+        </div>
+
+        <div id='xian-legend' class='legend' style='display: none;'>
+            <h4>行政区类型</h4>
+            <div><span style='background-color: #439320'></span>县级行政区</div>            
+        </div>
+        
+        <div id='local-authority' class='locau' style='display: block;'>
+            <h5 id="laname">Hover over a local authority on '县级行政区' layer</h5>
+        </div>
         
         <div id='map' class='map'></div>
     
@@ -313,11 +345,20 @@
             <div class='map-overlay-inner'>
 
                 <h2>中国工商银行 苏州分行 营业网点分布图</h2>
-                <table>
-                    <tr><td><p class="cityfly">Zoom To: <a href="#" class="citylink" id="cs">常熟</a> &nbsp;<a href="#" class="citylink" id="dq">道前</a> &nbsp;<a href="#" class="citylink" id="ks">昆山</a> &nbsp;<a href="#" class="citylink" id="ly">留园</a> &nbsp;<a href="#" class="citylink" id="tc">太仓</a> &nbsp;<a href="#" class="citylink" id="wj">吴江</a> &nbsp;<a href="#" class="citylink" id="wz">吴中</a> &nbsp;<a href="#" class="citylink" id="xc">相城</a> &nbsp;<a href="#" class="citylink" id="xq">新区</a> &nbsp;<a href="#" class="citylink" id="yq">园区</a> &nbsp;<a href="#" class="citylink" id="zjg">张家港</a> <br> Back To: <a href="#" class="citylink" id="whol">苏州</a></p>
+                <table><tr><td>
+                    
+                    <tex><label for='layer1'>市级行政区</label></tex>
+                    <tog1><input id='layer1' type='radio' name='toggle' value='Den' checked='checked'></tog1>
+                    <br>
+                    <tex><label for='layer2'>县级行政区</label></tex>
+                    <tog2><input id='layer2' type='radio' name='toggle' value='Pro'></tog2>
+                    </td>
+                    </tr>                    
+
+                    <tr><td><br><p class="cityfly">Zoom To: <a href="#" class="citylink" id="cs">常熟</a> &nbsp;<a href="#" class="citylink" id="dq">道前</a> &nbsp;<a href="#" class="citylink" id="ks">昆山</a> &nbsp;<a href="#" class="citylink" id="ly">留园</a> &nbsp;<a href="#" class="citylink" id="tc">太仓</a> &nbsp;<a href="#" class="citylink" id="wj">吴江</a> &nbsp;<a href="#" class="citylink" id="wz">吴中</a> &nbsp;<a href="#" class="citylink" id="xc">相城</a> &nbsp;<a href="#" class="citylink" id="xq">新区</a> &nbsp;<a href="#" class="citylink" id="yq">园区</a> &nbsp;<a href="#" class="citylink" id="zjg">张家港</a> <br> Back To: <a href="#" class="citylink" id="whol">苏州</a></p>
                         </td></tr>
                 </table>
-                                                
+                
                 Keep at least one of '财富管理中心', '理财中心' and '金融便利店' layer visible, drag the map, search 网点(s) in the displayed area. <br> After each update of the layer settings, please re-drag the map to populate the updated results.
                 <p class='lim'><input id='feature-filter' type='text' placeholder='Enter correct 网点名称 to filter results' />
                     <a id='feature-listing' class='listing'></a>
@@ -342,6 +383,14 @@
                 pitch: 0 // tilt of the viewpoint in degrees
             });
 
+            // Holds visible station features for filtering
+            var stations = [];
+ 
+            // Create a popup, but don't add it to the map yet.
+            var popup = new mapboxgl.Popup({
+                closeButton: false
+            });
+ 
             // Holds visible 网名名 features for filtering
             var 网名名s = [];
  
@@ -414,9 +463,88 @@
 
             map.on('load', function() {
                 // Add standard navigation control
-                map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+                map.addControl(new mapboxgl.NavigationControl(), 'bottom-left');
                 
-                // Add the proportional circle layer to the map
+                map.addLayer({
+                    id: 'shiqu',
+                    type: 'fill',
+                    source: {
+                        type: 'vector',
+                        url: 'mapbox://sangyuhong.67op0s83' // Mapbox tileset Map ID
+                    },
+                    'source-layer': 'SZS-27vbrb', // name of tilesets
+                    paint: {
+                        'fill-opacity': 0.95,
+                        'fill-color': '#FFEDA0'
+                    }
+                });
+    
+                map.addLayer({
+                    id: 'xianqu',
+                    type: 'fill',
+                    source: {
+                        type: 'vector',
+                        url: 'mapbox://sangyuhong.alohotjf' // Mapbox tileset Map ID
+                    },
+                    'source-layer': 'SZX-2ip06q', // name of tilesets
+                    paint: {
+                        'fill-opacity': 0,
+                        'fill-color': '#439320'
+                        }
+                });
+                
+                map.addLayer({
+                    id: 'lahighlight',
+                    type: 'line',
+                    source: {
+                        type: 'vector',
+                        url: 'mapbox://sangyuhong.alohotjf' // Mapbox tileset Map ID
+                    },
+                    'source-layer': 'SZX-2ip06q', // name of tilesets
+                    'layout': {
+                        'visibility': 'visible'
+                    },
+                    paint: {
+                        'line-color': '#D8D0CD',
+                        'line-width': 3
+                    },
+                    filter: ['==','NL_NAME_3','empty']
+                });
+                
+                map.on('mousemove', function(e) {
+                    var la = afterMap.queryRenderedFeatures(e.point, {
+                        layers: ['xianqu']
+                    });
+                    
+                    if (la.length==1) {
+                        afterMap.setFilter('lahighlight', ['==','NL_NAME_3',la[0].properties.NL_NAME_3]);
+                        document.getElementById('local-authority').innerHTML = la[0].properties.NL_NAME_3 + ': GDP数据待完善。';
+                    } else {
+                        afterMap.setFilter('lahighlight', ['==','NL_NAME_3','null']);
+                        document.getElementById('local-authority').innerHTML = "Hover over a local authority on '县级行政区' layer";
+                    }                    
+                });
+
+                var shiLegendEl = document.getElementById('shi-legend');
+                var xianLegendEl = document.getElementById('xian-legend');
+
+                //Event listener for layer switch
+                document.getElementById('layer1').addEventListener('click', function(){
+                    map.setPaintProperty('shiqu','fill-opacity',0.95);
+                    map.setPaintProperty('xianqu','fill-opacity',0);
+                    map.setPaintProperty('local-authority','fill-opacity',0);
+                    shiLegendEl.style.display = 'block';
+                    xianLegendEl.style.display = 'none';
+                });
+
+                document.getElementById('layer2').addEventListener('click', function(){
+                    map.setPaintProperty('shiqu','fill-opacity',0);
+                    map.setPaintProperty('xianqu','fill-opacity',0.95);
+                   map.setPaintProperty('local-authority','fill-opacity',0.95);
+                    shiLegendEl.style.display = 'none';
+                    xianLegendEl.style.display = 'block';
+                });
+                
                 map.addLayer({
                     id: '财富管理中心',
                     type: 'circle',
